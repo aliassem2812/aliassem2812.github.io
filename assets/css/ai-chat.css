@@ -1,0 +1,663 @@
+/*
+---------------------------------------------
+  AI GUIDE CHAT WIDGET
+  Purple theme matching the site's scrollbar (#bb86fc, hover #ca9eff),
+  follows the site's dark/light mode.
+  Everything is scoped to #ha-chat / .ha-cta so the site's global
+  button and link styles don't leak in.
+---------------------------------------------
+*/
+
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap");
+
+#ha-chat,
+.ha-cta {
+  --ha-grad: #bb86fc;
+  --ha-glow: rgba(187, 134, 252, 0.45);
+  --ha-glow-hover: rgba(202, 158, 255, 0.55);
+  --ha-tint: rgba(187, 134, 252, 0.08);
+  --ha-ring: rgba(187, 134, 252, 0.2);
+}
+
+#ha-chat {
+  --ha-bg: #161a21;
+  --ha-surface: #1f242d;
+  --ha-border: rgba(255, 255, 255, 0.08);
+  --ha-chip-border: rgba(187, 134, 252, 0.35);
+  --ha-text: #e8edf4;
+  --ha-muted: #9aa4b2;
+  --ha-accent: #bb86fc;
+  --ha-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  z-index: 1040;
+  font-family: "Poppins", sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.55;
+  color: var(--ha-text);
+  text-align: left;
+}
+
+html[light-mode="light"] #ha-chat {
+  --ha-bg: #ffffff;
+  --ha-surface: #f6f1fd;
+  --ha-border: rgba(0, 0, 0, 0.08);
+  --ha-chip-border: rgba(187, 134, 252, 0.45);
+  --ha-text: #191919;
+  --ha-muted: #6c757d;
+  --ha-accent: #8b4fd6; /* darker shade of #bb86fc so text stays readable on white */
+  --ha-tint: rgba(187, 134, 252, 0.1);
+  --ha-ring: rgba(187, 134, 252, 0.25);
+  --ha-shadow: 0 24px 60px rgba(50, 0, 90, 0.18);
+}
+
+/* Resets against the site's global styles */
+#ha-chat *,
+#ha-chat *::before,
+#ha-chat *::after {
+  box-sizing: border-box;
+}
+
+#ha-chat p,
+#ha-chat ul {
+  margin: 0;
+}
+
+#ha-chat button {
+  width: auto;
+  height: auto;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  outline: none;
+}
+
+#ha-chat a,
+#ha-chat a:hover {
+  color: var(--ha-accent);
+  text-decoration: none;
+}
+
+#ha-chat button:focus-visible,
+#ha-chat a:focus-visible,
+#ha-chat input:focus-visible,
+.ha-cta:focus-visible {
+  outline: 2px solid var(--ha-accent, #bb86fc);
+  outline-offset: 2px;
+}
+
+#ha-chat [hidden] {
+  display: none !important;
+}
+
+/* Pages with the site's custom cursor: no native cursor in the chat either,
+   and keep the cursor dots above the chat so they never disappear behind it */
+html.ha-custom-cursor #ha-chat,
+html.ha-custom-cursor #ha-chat *,
+html.ha-custom-cursor .ha-cta,
+html.ha-custom-cursor .ha-cta * {
+  cursor: none !important;
+}
+
+body .cursor-dot,
+body .cursor-dot-outline {
+  z-index: 2147483647;
+}
+
+/* Keep the site's scroll-to-top button clear of the chat launcher */
+body #btnScrollToTop {
+  bottom: 88px;
+  right: 15px;
+}
+
+/*
+---------------------------
+  LAUNCHER
+---------------------------
+*/
+
+#ha-chat .ha-launcher {
+  position: relative;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: var(--ha-grad);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 10px 30px var(--ha-glow);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+#ha-chat .ha-launcher:hover {
+  background: #ca9eff;
+  transform: translateY(-3px) scale(1.04);
+  box-shadow: 0 14px 34px var(--ha-glow-hover);
+}
+
+#ha-chat .ha-launcher.ha-pulse::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: var(--ha-grad);
+  z-index: -1;
+  animation: ha-pulse 2.2s ease-out infinite;
+}
+
+#ha-chat .ha-launcher-icon {
+  position: absolute;
+  display: flex;
+  transition: transform 0.25s ease, opacity 0.2s ease;
+}
+
+#ha-chat .ha-launcher-close,
+#ha-chat.ha-open .ha-launcher-open {
+  opacity: 0;
+  transform: rotate(90deg) scale(0.6);
+}
+
+#ha-chat.ha-open .ha-launcher-close {
+  opacity: 1;
+  transform: none;
+}
+
+/*
+---------------------------
+  TEASER BUBBLE
+---------------------------
+*/
+
+#ha-chat .ha-teaser {
+  position: absolute;
+  right: 0;
+  bottom: 76px;
+  width: 300px;
+  padding: 16px 16px 14px;
+  border-radius: 16px 16px 4px 16px;
+  background: var(--ha-bg);
+  border: 1px solid var(--ha-border);
+  box-shadow: var(--ha-shadow);
+  animation: ha-pop 0.35s cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
+}
+
+#ha-chat .ha-teaser-text {
+  padding-right: 22px;
+}
+
+#ha-chat .ha-teaser-close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  color: var(--ha-muted);
+}
+
+#ha-chat .ha-teaser-close:hover {
+  background: var(--ha-surface);
+}
+
+#ha-chat .ha-teaser-chips {
+  margin-top: 12px;
+}
+
+/*
+---------------------------
+  PANEL
+---------------------------
+*/
+
+#ha-chat .ha-panel {
+  position: absolute;
+  right: 0;
+  bottom: 76px;
+  width: 380px;
+  height: min(620px, calc(100vh - 120px));
+  display: flex;
+  flex-direction: column;
+  background: var(--ha-bg);
+  border: 1px solid var(--ha-border);
+  border-radius: 20px;
+  box-shadow: var(--ha-shadow);
+  overflow: hidden;
+  transform-origin: bottom right;
+  animation: ha-pop 0.3s cubic-bezier(0.2, 0.9, 0.3, 1.1) both;
+}
+
+#ha-chat .ha-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 10px 14px 16px;
+  background: var(--ha-grad);
+  color: #fff;
+}
+
+#ha-chat .ha-avatar {
+  width: 40px;
+  height: 40px;
+  padding: 2px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.15);
+  flex-shrink: 0;
+}
+
+#ha-chat .ha-title {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+#ha-chat .ha-title strong {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+#ha-chat .ha-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  opacity: 0.85;
+}
+
+#ha-chat .ha-status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #4ade80;
+  box-shadow: 0 0 0 3px rgba(74, 222, 128, 0.25);
+}
+
+#ha-chat.ha-offline .ha-status-dot {
+  background: #fbbf24;
+  box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.25);
+}
+
+#ha-chat .ha-icon-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.15s ease;
+}
+
+#ha-chat .ha-header .ha-icon-btn,
+#ha-chat .ha-header .ha-icon-btn:hover {
+  color: #fff;
+}
+
+#ha-chat .ha-header .ha-icon-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+/* Body */
+#ha-chat .ha-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+#ha-chat .ha-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+#ha-chat .ha-body::-webkit-scrollbar-track {
+  background: transparent;
+  box-shadow: none;
+}
+
+#ha-chat .ha-body::-webkit-scrollbar-thumb {
+  background: var(--ha-chip-border);
+  box-shadow: none;
+  border-radius: 3px;
+}
+
+#ha-chat .ha-intro {
+  padding: 14px;
+  border-radius: 14px;
+  background: var(--ha-surface);
+  border: 1px solid var(--ha-border);
+}
+
+#ha-chat .ha-intro strong {
+  font-weight: 600;
+}
+
+#ha-chat .ha-facts {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 12px;
+}
+
+#ha-chat .ha-facts span {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 12.5px;
+  color: var(--ha-muted);
+}
+
+#ha-chat .ha-facts b {
+  min-width: 56px;
+  font-weight: 600;
+  color: var(--ha-accent);
+}
+
+/* Messages */
+#ha-chat .ha-messages {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+#ha-chat .ha-msg {
+  max-width: 88%;
+  padding: 10px 14px;
+  border-radius: 16px;
+  word-wrap: break-word;
+  animation: ha-in 0.25s ease both;
+}
+
+#ha-chat .ha-user {
+  align-self: flex-end;
+  background: var(--ha-grad);
+  color: #fff;
+  border-bottom-right-radius: 4px;
+  white-space: pre-wrap;
+}
+
+#ha-chat .ha-ai {
+  align-self: flex-start;
+  background: var(--ha-surface);
+  border: 1px solid var(--ha-border);
+  border-bottom-left-radius: 4px;
+}
+
+#ha-chat .ha-ai p + p,
+#ha-chat .ha-ai p + ul,
+#ha-chat .ha-ai ul + p {
+  margin-top: 8px;
+}
+
+#ha-chat .ha-ai ul {
+  padding-left: 18px;
+}
+
+#ha-chat .ha-ai strong {
+  font-weight: 600;
+}
+
+/* Typing indicator */
+#ha-chat .ha-typing {
+  display: flex;
+  gap: 5px;
+  padding: 15px 16px;
+}
+
+#ha-chat .ha-typing span {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--ha-accent);
+  opacity: 0.3;
+  animation: ha-bounce 1.2s infinite;
+}
+
+#ha-chat .ha-typing span:nth-child(2) { animation-delay: 0.15s; }
+#ha-chat .ha-typing span:nth-child(3) { animation-delay: 0.3s; }
+
+/* Contact nudge */
+#ha-chat .ha-nudge {
+  padding: 14px;
+  border-radius: 14px;
+  background: rgba(187, 134, 252, 0.16);
+  border: 1px solid var(--ha-chip-border);
+  font-size: 13px;
+  animation: ha-in 0.3s ease both;
+}
+
+#ha-chat .ha-nudge strong {
+  font-weight: 600;
+}
+
+#ha-chat .ha-nudge-btn,
+#ha-chat .ha-nudge-btn:hover {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  padding: 8px 16px;
+  border-radius: 999px;
+  background: var(--ha-grad);
+  color: #fff;
+  font-weight: 500;
+}
+
+#ha-chat .ha-nudge-btn:hover {
+  filter: brightness(1.12);
+}
+
+/* Suggestion chips */
+#ha-chat .ha-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+#ha-chat .ha-chip {
+  padding: 7px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--ha-chip-border);
+  color: var(--ha-text);
+  font-size: 12.5px;
+  line-height: 1.35;
+  text-align: left;
+  transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+}
+
+#ha-chat .ha-chip:hover {
+  border-color: var(--ha-accent);
+  color: var(--ha-accent);
+  background: var(--ha-tint);
+}
+
+/* Input */
+#ha-chat .ha-form {
+  display: flex;
+  gap: 8px;
+  margin: 0;
+  padding: 12px 12px 6px;
+  border-top: 1px solid var(--ha-border);
+}
+
+#ha-chat .ha-input {
+  flex: 1;
+  min-width: 0;
+  height: 44px;
+  padding: 0 14px;
+  border-radius: 12px;
+  border: 1px solid var(--ha-border);
+  background: var(--ha-surface);
+  color: var(--ha-text);
+  font: inherit;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+#ha-chat .ha-input:focus {
+  border-color: var(--ha-accent);
+  box-shadow: 0 0 0 3px var(--ha-ring);
+}
+
+#ha-chat .ha-input::placeholder {
+  color: var(--ha-muted);
+}
+
+#ha-chat .ha-send {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: var(--ha-grad);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: transform 0.15s ease, opacity 0.15s ease;
+}
+
+#ha-chat .ha-send:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+#ha-chat .ha-send:disabled,
+#ha-chat .ha-input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+#ha-chat .ha-disclaimer {
+  padding: 0 14px 10px;
+  font-size: 11px;
+  color: var(--ha-muted);
+  text-align: center;
+}
+
+/*
+---------------------------
+  HERO CALL-TO-ACTION (home page)
+---------------------------
+*/
+
+.ha-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  width: auto;
+  height: auto;
+  margin: 22px 0 8px;
+  padding: 12px 26px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--ha-grad);
+  color: #fff;
+  font-family: "Poppins", sans-serif;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.4;
+  box-shadow: 0 10px 28px var(--ha-glow);
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  animation: ha-pop 0.5s ease both;
+}
+
+.ha-cta:hover {
+  background: #ca9eff;
+  transform: translateY(-2px);
+  box-shadow: 0 14px 34px var(--ha-glow-hover);
+}
+
+.ha-cta-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #4ade80;
+  animation: ha-live 1.8s infinite;
+}
+
+/*
+---------------------------
+  ANIMATIONS
+---------------------------
+*/
+
+@keyframes ha-pop {
+  from { opacity: 0; transform: translateY(10px) scale(0.96); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes ha-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes ha-pulse {
+  from { transform: scale(1); opacity: 0.6; }
+  to { transform: scale(1.7); opacity: 0; }
+}
+
+@keyframes ha-bounce {
+  0%, 60%, 100% { opacity: 0.3; transform: translateY(0); }
+  30% { opacity: 1; transform: translateY(-4px); }
+}
+
+@keyframes ha-live {
+  0% { box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.6); }
+  70% { box-shadow: 0 0 0 8px rgba(74, 222, 128, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(74, 222, 128, 0); }
+}
+
+/*
+---------------------------
+  MOBILE
+---------------------------
+*/
+
+@media (max-width: 576px) {
+  #ha-chat {
+    right: 14px;
+    bottom: 14px;
+  }
+
+  #ha-chat .ha-panel {
+    position: fixed;
+    inset: 0;
+    width: auto;
+    height: auto;
+    border: 0;
+    border-radius: 0;
+  }
+
+  #ha-chat.ha-open .ha-launcher {
+    display: none;
+  }
+
+  #ha-chat .ha-teaser {
+    width: calc(100vw - 28px);
+  }
+
+  #ha-chat .ha-input {
+    font-size: 16px; /* Prevents zoom on iOS */
+  }
+
+  .ha-cta {
+    font-size: 15px;
+    padding: 11px 22px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #ha-chat *,
+  #ha-chat *::before,
+  .ha-cta,
+  .ha-cta * {
+    animation: none !important;
+    transition: none !important;
+  }
+}

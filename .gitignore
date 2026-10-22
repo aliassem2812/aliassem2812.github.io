@@ -1,0 +1,5 @@
+node_modules/
+*.log
+.env
+# Old, unused contact script that contains the Discord webhook address
+assets/js/senddiscord.js
