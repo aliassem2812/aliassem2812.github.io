@@ -66,6 +66,14 @@ html[light-mode="light"] #ha-chat {
   margin: 0;
 }
 
+/* Some pages style these elements globally (e.g. education.css: section { padding: 100px 0 }) */
+#ha-chat section,
+#ha-chat header,
+#ha-chat form {
+  margin: 0;
+  padding: 0;
+}
+
 #ha-chat button {
   width: auto;
   height: auto;
@@ -306,10 +314,14 @@ body #btnScrollToTop {
 #ha-chat .ha-body {
   flex: 1;
   overflow-y: auto;
-  padding: 16px;
+  padding: 16px !important; /* experience.css: section > div { padding-top: 7rem !important } */
   display: flex;
   flex-direction: column;
   gap: 12px;
+  /* The site sets scrollbar-color on <html>; it is inherited and would replace the
+     slim scrollbar below with a wide one with arrow buttons */
+  scrollbar-width: thin;
+  scrollbar-color: var(--ha-chip-border) transparent;
 }
 
 #ha-chat .ha-body::-webkit-scrollbar {
