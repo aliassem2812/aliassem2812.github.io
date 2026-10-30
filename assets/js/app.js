@@ -8,7 +8,7 @@ document.body.appendChild(script);
 
 // AI guide chat widget (appears on every page once the AI server is reachable)
 let aiChat = document.createElement("script");
-aiChat.src = "assets/js/ai-chat.js";
+aiChat.src = "assets/js/ai-chat.js?v=2"; // raise ?v= after changing the chat, so browsers skip their cached copy
 document.body.appendChild(aiChat);
 
 // Clean URLs work on Netlify; local dev servers (Live Server) need the .html extension
@@ -260,8 +260,6 @@ let footer = $(`
 //"Scroll to top" button
 let upArrow = $(`
   <button id="btnScrollToTop" onclick="scrollToTop()"><i class="fas fa-2x fa-angle-up"></i></button>
-  <link rel="stylesheet" type="text/css" href="./css/style.css" />
-  })
 `);
 
 $(document).ready(function () {

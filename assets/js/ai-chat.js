@@ -112,7 +112,13 @@
 
   const css = document.createElement("link");
   css.rel = "stylesheet";
-  css.href = "assets/css/ai-chat.css";
+  css.href = "assets/css/ai-chat.css?v=2";
+  // The widget only appears once its styles are loaded, so it never shows unstyled
+  // when the stylesheet is slower than the server connection (seen in Edge)
+  const cssReady = new Promise(resolve => {
+    css.addEventListener("load", resolve);
+    css.addEventListener("error", resolve);
+  });
   document.head.appendChild(css);
 
   const root = document.createElement("div");
@@ -324,6 +330,7 @@
   let online = false;
   let everOnline = false;
   let retries = 0;
+  let revealing = false;
   let busy = false;
   let current = null; // { el, text } - the AI answer being streamed
 
@@ -340,11 +347,14 @@
     els.send.disabled = !value || busy;
 
     // First successful connection: reveal the widget and the page's call-to-action buttons
-    if (value && root.hidden) {
-      root.hidden = false;
-      document.querySelectorAll("[data-ha-chat-open]").forEach(el => { el.hidden = false; });
-      restoreMessages();
-      if (state.open) openPanel(null, true); else scheduleTeaser();
+    if (value && root.hidden && !revealing) {
+      revealing = true;
+      cssReady.then(() => {
+        root.hidden = false;
+        document.querySelectorAll("[data-ha-chat-open]").forEach(el => { el.hidden = false; });
+        restoreMessages();
+        if (state.open) openPanel(null, true); else scheduleTeaser();
+      });
     }
   }
 
